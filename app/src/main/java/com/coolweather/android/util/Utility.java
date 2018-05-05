@@ -5,6 +5,9 @@ import android.text.TextUtils;
 import com.coolweather.android.db.City;
 import com.coolweather.android.db.County;
 import com.coolweather.android.db.Province;
+import com.coolweather.android.gson.Weather;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -34,12 +37,13 @@ public class Utility {
     }
 
     private static final String TAG = "Utility";
+
     /*解析和处理服务器返回的市级数据*/
     public static boolean handleCityResponse(String response, int provinceId) {
-        if(!TextUtils.isEmpty(response)){
-            try{
+        if (!TextUtils.isEmpty(response)) {
+            try {
                 JSONArray allCities = new JSONArray(response);
-                for(int i = 0; i < allCities.length(); i++){
+                for (int i = 0; i < allCities.length(); i++) {
                     JSONObject cityObject = allCities.getJSONObject(i);
                     City city = new City();
                     city.setCityName(cityObject.getString("name"));
@@ -48,18 +52,19 @@ public class Utility {
                     city.save();
                 }
                 return true;
-            }catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
         return false;
     }
+
     /*解析和处理服务器返回的县级数据*/
-    public static boolean handleCountyResponse(String response, int cityId){
-        if(!TextUtils.isEmpty(response)){
+    public static boolean handleCountyResponse(String response, int cityId) {
+        if (!TextUtils.isEmpty(response)) {
             try {
                 JSONArray allCounties = new JSONArray(response);
-                for(int i = 0; i < allCounties.length(); i++){
+                for (int i = 0; i < allCounties.length(); i++) {
                     JSONObject countyObject = allCounties.getJSONObject(i);
                     County county = new County();
                     county.setCountyName(countyObject.getString("name"));
@@ -73,5 +78,20 @@ public class Utility {
             }
         }
         return false;
+    }
+
+    /**
+     * 将返回的JSON数据解析为Weather实体类
+     */
+    public static Weather handleWeatherResponse(String response) {
+        try {
+            JSONObject jsonObject = new JSONObject(response);
+            JSONArray jsonArray = jsonObject.getJSONArray("HeWeather");
+            String weatherContent = jsonArray.getJSONObject(0).toString();
+            return new Gson().fromJson(weatherContent, Weather.class);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
